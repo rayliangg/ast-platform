@@ -19,7 +19,8 @@ function TreeItem({
   selectedId?: string;
   onSelect: (node: AstNode) => void;
 }) {
-  const hasChildren = node.children.length > 0;
+  const children = Array.isArray(node.children) ? node.children : [];
+  const hasChildren = children.length > 0;
   const [expanded, setExpanded] = useState(depth < DEFAULT_EXPANDED_DEPTH);
   const isSelected = selectedId === node.id;
 
@@ -66,7 +67,7 @@ function TreeItem({
       </div>
 
       {expanded &&
-        node.children.map((child) => (
+        children.map((child) => (
           <TreeItem
             key={child.id}
             node={child}
