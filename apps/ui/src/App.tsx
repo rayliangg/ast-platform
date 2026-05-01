@@ -879,13 +879,15 @@ export default function App() {
                       <div className="inspector-row">
                         <span>Start</span>
                         <strong>
-                          {selected.range.start.row}:{selected.range.start.column}
+                          {selected.range?.start
+                            ? `${selected.range.start.row}:${selected.range.start.column}`
+                            : "—"}
                         </strong>
                       </div>
                       <div className="inspector-row">
                         <span>End</span>
                         <strong>
-                          {selected.range.end.row}:{selected.range.end.column}
+                          {selected.range?.end ? `${selected.range.end.row}:${selected.range.end.column}` : "—"}
                         </strong>
                       </div>
                     </div>
