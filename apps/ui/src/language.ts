@@ -11,9 +11,11 @@ class ReportBuilder:
     """Base report shell."""
 
     def __init__(self, title: str) -> None:
+        """Initialize base report title."""
         self.title = title
 
     def build(self) -> dict:
+        """Build a minimal report payload."""
         return {"title": self.title}
 
 
@@ -21,10 +23,12 @@ class GiftReportBuilder(ReportBuilder):
     """Subclass adds gift metadata."""
 
     def __init__(self, title: str, code: str) -> None:
+        """Store gift code and inherited title."""
         super().__init__(title)
         self.code = code
 
     def build(self) -> dict:
+        """Build extended gift report payload."""
         out = super().build()
         out["code"] = self.code
         out["hint"] = helper(self.code)
@@ -32,6 +36,7 @@ class GiftReportBuilder(ReportBuilder):
 
 
 def run_demo() -> dict:
+    """Run the demo scenario."""
     g = GiftReportBuilder("Q4", "GIFT-1")
     return g.build()
 `,
@@ -41,17 +46,20 @@ import axios from "axios";
 import z from "./local.js";
 
 class ReportBase {
+  // Base title for all reports.
   title() {
     return "base";
   }
 }
 
 class UserService extends ReportBase {
+  // Create a user record using base label.
   createUser(name) {
     return { name, label: this.title() };
   }
 }
 
+// Build report at module level.
 function buildReport(id) {
   return { id, ok: true };
 }
@@ -65,17 +73,20 @@ import { helper } from "./local";
 type Report = { title: string };
 
 class BaseController {
+  // Shared transform behavior.
   protected transform(input: string): string {
     return input;
   }
 }
 
 class AppController extends BaseController {
+  // Entry point for app-side processing.
   run(path: string): string {
     return helper(join(path, "ok"));
   }
 }
 
+// Summarize report metadata.
 function summarize(x: Report): string {
   return x.title;
 }
@@ -91,10 +102,12 @@ import (
 )
 
 type ReportBase struct {
+	// Title keeps the base report label.
 	Title string
 }
 
 func (b ReportBase) Label() string {
+	// Return base label.
 	return b.Title
 }
 
@@ -103,10 +116,12 @@ type UserService struct {
 }
 
 func (s UserService) CreateUser(name string) string {
+	// Build user payload value.
 	return name
 }
 
 func runDemo() {
+	// Execute demo side effect.
 	_ = fmt.Sprint(uuid.New())
 }
 `,
@@ -118,10 +133,12 @@ use std::fmt::Debug;
 use crate::local::helper;
 
 struct ReportBase {
+    // Base title for report-like objects.
     title: String,
 }
 
 impl ReportBase {
+    // Construct base report.
     fn new(title: &str) -> Self {
         Self {
             title: title.to_string(),
@@ -134,6 +151,7 @@ struct UserService {
 }
 
 impl UserService {
+    // Create user display value.
     fn create_user(&self, name: &str) -> String {
         helper(name)
     }
@@ -148,12 +166,14 @@ import org.slf4j.Logger;
 import com.example.local.Helper;
 
 class ReportBase {
+    // Return base title.
     String title() {
         return "base";
     }
 }
 
 class UserService extends ReportBase {
+    // Create user from input name.
     String createUser(String name) {
         return name;
     }
@@ -169,6 +189,7 @@ class UserService extends ReportBase {
 
 class ReportBase {
 public:
+    // Return base title literal.
     virtual const char* title() {
         return "base";
     }
@@ -177,6 +198,7 @@ public:
 
 class UserService : public ReportBase {
 public:
+    // Create user value from input.
     const char* createUser(const char* name) {
         return name;
     }
@@ -208,30 +230,36 @@ using System;
 using MyCompany.App;
 
 class ReportBase {
+    // Base virtual title.
     public virtual string Title() => "base";
 }
 
 class UserService : ReportBase {
+    // Create user value from input.
     public string CreateUser(string name) => name;
 }
 `,
   php: `<?php
+// PHP demo: base class + service + module function.
 
 use App\\Local\\Helper;
 use DateTime;
 
 class ReportBase {
+    // Return base title.
     public function title(): string {
         return "base";
     }
 }
 
 class UserService extends ReportBase {
+    // Create user from input.
     public function createUser(string $name): string {
         return $name;
     }
 }
 
+// Build report at module scope.
 function build_report(): array {
     return [];
 }
@@ -260,17 +288,20 @@ import Foundation
 import MyLocalModule
 
 class ReportBase {
+    // Return base report title.
     func title() -> String {
         "base"
     }
 }
 
 class UserService: ReportBase {
+    // Create user from input.
     func createUser(_ name: String) -> String {
         name
     }
 }
 
+// Build report payload.
 func buildReport() -> [String: Any] {
     [:]
 }
