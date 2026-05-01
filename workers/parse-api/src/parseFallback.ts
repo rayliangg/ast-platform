@@ -325,17 +325,39 @@ function functionPatterns(language: string): RegExp[] {
     case "python":
       return [/^\s*def\s+([A-Za-z_]\w*)\s*\(/];
     case "javascript":
+      return [
+        /^\s*function\s+([A-Za-z_]\w*)\s*\(/,
+        /^\s*(?:async\s+)?([A-Za-z_]\w*)\s*\([^)]*\)\s*\{/,
+        /^\s*(?:const|let|var)\s+([A-Za-z_]\w*)\s*=\s*(?:async\s*)?\([^)]*\)\s*=>\s*\{/,
+      ];
     case "typescript":
-      return [/^\s*function\s+([A-Za-z_]\w*)\s*\(/, /^\s*([A-Za-z_]\w*)\s*\([^)]*\)\s*\{/];
+      return [
+        /^\s*function\s+([A-Za-z_]\w*)\s*\(/,
+        /^\s*(?:public|private|protected|readonly|static|async|abstract|override|\s)*([A-Za-z_]\w*)\s*\([^)]*\)\s*(?::\s*[^({=]+)?\s*\{/,
+        /^\s*(?:const|let|var)\s+([A-Za-z_]\w*)\s*=\s*(?:async\s*)?\([^)]*\)\s*(?::\s*[^=]+)?=>\s*\{/,
+      ];
     case "go":
-      return [/^\s*func\s+([A-Za-z_]\w*)\s*\(/, /^\s*func\s*\([^)]*\)\s*([A-Za-z_]\w*)\s*\(/];
+      return [
+        /^\s*func\s+([A-Za-z_]\w*)\s*\(/,
+        /^\s*func\s*\(\s*(?:\w+\s+)?\*?\s*[A-Za-z_]\w*\s*\)\s*([A-Za-z_]\w*)\s*\(/,
+      ];
     case "rust":
       return [/^\s*(?:pub\s+)?fn\s+([A-Za-z_]\w*)\s*\(/];
     case "java":
     case "csharp":
-    case "kotlin":
-    case "swift":
       return [/^\s*(?:public|private|protected|internal|static|virtual|override|final|\s)*\s*[A-Za-z_][\w<>\[\]?]*\s+([A-Za-z_]\w*)\s*\(/];
+    case "kotlin":
+      return [
+        /^\s*(?:public|private|protected|internal|open|final|abstract|override|suspend|inline|tailrec|operator|infix|\s)*fun\s+([A-Za-z_]\w*)\s*\(/,
+      ];
+    case "swift":
+      return [
+        /^\s*(?:public|private|fileprivate|internal|open|final|override|mutating|nonmutating|static|class|\s)*func\s+([A-Za-z_]\w*)\s*\(/,
+      ];
+    case "dart":
+      return [
+        /^\s*(?:static|final|const|external|late|covariant|\s)*[A-Za-z_][\w<>\[\]?]*\s+([A-Za-z_]\w*)\s*\([^)]*\)\s*(?:=>|\{)/,
+      ];
     case "cpp":
     case "c":
       return [
