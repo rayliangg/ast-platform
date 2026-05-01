@@ -7,10 +7,11 @@ import { DEMO_BY_LANGUAGE, detectLanguage, PARSE_SUPPORTED_LANGUAGES, TOP_10_LAN
 /** If present at `<openedRoot>/directory.json`, its JSON object is stored on the tree root metadata. */
 const DIRECTORY_MANIFEST_FILENAME = "directory.json";
 const parseApiBaseRaw = import.meta.env.VITE_PARSE_API_BASE?.trim();
-const PARSE_API_BASE = (parseApiBaseRaw && parseApiBaseRaw.length > 0 ? parseApiBaseRaw : "http://localhost:8787").replace(
-  /\/+$/,
-  ""
-);
+const defaultParseApiBase =
+  window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+    ? "http://localhost:8787"
+    : "https://ast-platform-parse-api.astplatform-ray.workers.dev";
+const PARSE_API_BASE = (parseApiBaseRaw && parseApiBaseRaw.length > 0 ? parseApiBaseRaw : defaultParseApiBase).replace(/\/+$/, "");
 
 /** Direct child file name → language chip (non-recursive). */
 const EXT_LANGUAGE: Record<string, { id: string; label: string; icon: string }> = {

@@ -6,6 +6,7 @@ type Props = {
   onSelect: (node: AstNode) => void;
   selectedId?: string;
 };
+const DEFAULT_EXPANDED_DEPTH = 1;
 
 function TreeItem({
   node,
@@ -19,11 +20,11 @@ function TreeItem({
   onSelect: (node: AstNode) => void;
 }) {
   const hasChildren = node.children.length > 0;
-  const [expanded, setExpanded] = useState(depth < 2);
+  const [expanded, setExpanded] = useState(depth < DEFAULT_EXPANDED_DEPTH);
   const isSelected = selectedId === node.id;
 
   useEffect(() => {
-    setExpanded(depth < 2);
+    setExpanded(depth < DEFAULT_EXPANDED_DEPTH);
   }, [depth, node.id]);
 
   const label = useMemo(() => {
