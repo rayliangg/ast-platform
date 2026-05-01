@@ -111,6 +111,7 @@ func (b ReportBase) Label() string {
 	return b.Title
 }
 
+// User service reuses base behavior.
 type UserService struct {
 	ReportBase
 }
@@ -146,6 +147,7 @@ impl ReportBase {
     }
 }
 
+// Service wraps base report.
 struct UserService {
     base: ReportBase,
 }
@@ -196,6 +198,7 @@ public:
 };
 
 
+// User-facing service inherits report base.
 class UserService : public ReportBase {
 public:
     // Create user value from input.
@@ -321,11 +324,13 @@ import 'package:http/http.dart';
 
 import './local.dart';
 
+// Base class for report output.
 class ReportBase {
   // Return base report title.
   String title() => "base";
 }
 
+// Service class extends report base.
 class UserService extends ReportBase {
   // Create user from input.
   String createUser(String name) => name;
@@ -370,6 +375,7 @@ make_base <- function() {
   list(kind = "base")
 }
 
+ # Build service object with closure methods.
 make_service <- function() {
   s <- make_base()
   # Attach user-creation closure.

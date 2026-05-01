@@ -66,6 +66,11 @@ export function parseWithFallback({ language, source }: { language: string; sour
 }
 
 function findEndRow(language: string, lines: string[], startIdx: number): number {
+  const startLine = lines[startIdx] ?? "";
+  if (isSingleLineTerminatedMember(language, startLine)) {
+    return startIdx + 1;
+  }
+
   if (language === "python" || language === "ruby" || language === "r") {
     const baseIndent = leadingSpaces(lines[startIdx] ?? "");
     let endRow = startIdx + 1;
@@ -99,6 +104,16 @@ function findEndRow(language: string, lines: string[], startIdx: number): number
   }
 
   return startIdx + 1;
+}
+
+function isSingleLineTerminatedMember(language: string, line: string): boolean {
+  if (!usesBraceBlocks(language)) return false;
+  const trimmed = line.trim();
+  if (!trimmed) return false;
+  if (trimmed.includes("{")) return false;
+  if (trimmed.includes("=>")) return true;
+  if (trimmed.endsWith(";")) return true;
+  return false;
 }
 
 function usesBraceBlocks(language: string): boolean {
@@ -181,16 +196,31 @@ function extractNodeDocstring(
   endRow: number,
   parentIndent: number
 ): string | null {
-  if (language !== "python") return null;
   for (let i = startIdx + 1; i < Math.min(lines.length, endRow); i += 1) {
     const line = lines[i] ?? "";
     const trimmed = line.trim();
     if (!trimmed) continue;
-    const indent = leadingSpaces(line);
-    if (indent <= parentIndent) return null;
-    if ((trimmed.startsWith('"""') && trimmed.endsWith('"""') && trimmed.length > 6) || (trimmed.startsWith("'''") && trimmed.endsWith("'''") && trimmed.length > 6)) {
-      return trimmed.slice(3, -3).trim() || null;
+
+    if (language === "python") {
+      const indent = leadingSpaces(line);
+      if (indent <= parentIndent) return null;
+      if (
+        (trimmed.startsWith('"""') && trimmed.endsWith('"""') && trimmed.length > 6) ||
+        (trimmed.startsWith("'''") && trimmed.endsWith("'''") && trimmed.length > 6)
+      ) {
+        return trimmed.slice(3, -3).trim() || null;
+      }
+      return null;
     }
+
+    // For brace-based and other languages, use the first in-block comment as summary.
+    if (trimmed.startsWith("//")) return trimmed.replace(/^\/\/\/?/, "").trim() || null;
+    if (trimmed.startsWith("#")) return trimmed.replace(/^#/, "").trim() || null;
+    if (trimmed.startsWith("--")) return trimmed.replace(/^--/, "").trim() || null;
+    if (trimmed.startsWith("/*") && trimmed.endsWith("*/") && trimmed.length > 4) {
+      return trimmed.replace(/^\/\*+/, "").replace(/\*+\/$/, "").trim() || null;
+    }
+
     return null;
   }
   return null;
