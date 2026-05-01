@@ -76,7 +76,95 @@ function findEndRow(language: string, lines: string[], startIdx: number): number
     }
     return endRow;
   }
+
+  if (usesBraceBlocks(language)) {
+    let opened = 0;
+    let seenOpening = false;
+    let inBlockComment = false;
+    for (let i = startIdx; i < lines.length; i += 1) {
+      const line = lines[i] ?? "";
+      const scanned = stripStringsAndComments(line, () => inBlockComment, (v) => (inBlockComment = v));
+      for (const ch of scanned) {
+        if (ch === "{") {
+          opened += 1;
+          seenOpening = true;
+        } else if (ch === "}") {
+          opened = Math.max(0, opened - 1);
+        }
+      }
+      if (seenOpening && opened === 0) return i + 1;
+    }
+  }
+
   return startIdx + 1;
+}
+
+function usesBraceBlocks(language: string): boolean {
+  return [
+    "javascript",
+    "typescript",
+    "java",
+    "csharp",
+    "kotlin",
+    "swift",
+    "cpp",
+    "c",
+    "go",
+    "rust",
+    "php",
+  ].includes(language);
+}
+
+function stripStringsAndComments(
+  line: string,
+  getInBlockComment: () => boolean,
+  setInBlockComment: (value: boolean) => void
+): string {
+  let out = "";
+  let inSingle = false;
+  let inDouble = false;
+  let inTemplate = false;
+  let escape = false;
+  for (let i = 0; i < line.length; i += 1) {
+    const ch = line[i] ?? "";
+    const next = line[i + 1] ?? "";
+    const inBlockComment = getInBlockComment();
+
+    if (inBlockComment) {
+      if (ch === "*" && next === "/") {
+        setInBlockComment(false);
+        i += 1;
+      }
+      continue;
+    }
+
+    if (!inSingle && !inDouble && !inTemplate) {
+      if (ch === "/" && next === "/") break;
+      if (ch === "/" && next === "*") {
+        setInBlockComment(true);
+        i += 1;
+        continue;
+      }
+    }
+
+    if (!inDouble && !inTemplate && ch === "'" && !escape) {
+      inSingle = !inSingle;
+      continue;
+    }
+    if (!inSingle && !inTemplate && ch === '"' && !escape) {
+      inDouble = !inDouble;
+      continue;
+    }
+    if (!inSingle && !inDouble && ch === "`" && !escape) {
+      inTemplate = !inTemplate;
+      continue;
+    }
+
+    if (!inSingle && !inDouble && !inTemplate && (ch === "{" || ch === "}")) out += ch;
+    escape = ch === "\\" && !escape;
+    if (ch !== "\\") escape = false;
+  }
+  return out;
 }
 
 function endColumnAtRow(lines: string[], row: number): number {

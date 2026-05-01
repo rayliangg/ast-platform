@@ -337,7 +337,18 @@ function sliceSourceByRange(fullSource: string, range: AstNode["range"]): string
 
   picked[0] = picked[0].slice(firstIdx);
   picked[picked.length - 1] = picked[picked.length - 1].slice(0, Math.max(1, lastIdx));
-  return `${picked.join("\n")}\n`;
+  return `${dedentPreservingRelativeIndent(picked).join("\n")}\n`;
+}
+
+function dedentPreservingRelativeIndent(lines: string[]): string[] {
+  let minIndent = Number.POSITIVE_INFINITY;
+  for (const line of lines) {
+    if (!line.trim()) continue;
+    const indent = line.match(/^\s*/)?.[0].length ?? 0;
+    minIndent = Math.min(minIndent, indent);
+  }
+  if (!Number.isFinite(minIndent) || minIndent <= 0) return lines;
+  return lines.map((line) => (line.trim() ? line.slice(minIndent) : line));
 }
 
 function cloneNode(node: AstNode): AstNode {
