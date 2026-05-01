@@ -322,6 +322,7 @@ function buildDirectoryListing(directoryPath: string, files: File[]): string {
 }
 
 function sliceSourceByRange(fullSource: string, range: AstNode["range"]): string {
+  if (!range?.start || !range?.end) return fullSource;
   const lines = fullSource.replace(/\r\n/g, "\n").split("\n");
   const startRow = Math.max(1, range.start.row);
   const endRow = Math.max(startRow, range.end.row);
