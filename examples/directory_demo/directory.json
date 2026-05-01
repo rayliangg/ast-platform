@@ -1,0 +1,12 @@
+{
+  "manifest_version": 1,
+  "title": "directory_demo",
+  "summary": "Multi-language sample tree for the AST workbench (directory mode). Descriptions for the folder live in this file as JSON, not in a .py docstring.",
+  "paths": {
+    "backend/service.py": "Python: Repository, InMemoryUserRepository, UserService",
+    "backend/cart/cart.py": "Python: cart module placeholder for nested directory layout",
+    "frontend/app.ts": "TypeScript: BaseController → DefaultController → AppController",
+    "shared/helper.ts": "TypeScript: StringTransform / UpperCaseTransform",
+    "shared/utils.js": "JavaScript: Reader / FileReader / Utils"
+  }
+}
