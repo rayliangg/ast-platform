@@ -362,6 +362,23 @@ function attachParsedFileAst(root: AstNode, relativePath: string, parsedRoot: As
   return nextRoot;
 }
 
+function isAstNodeLike(value: unknown): value is AstNode {
+  if (!value || typeof value !== "object") return false;
+  const n = value as Partial<AstNode>;
+  return (
+    typeof n.id === "string" &&
+    typeof n.language === "string" &&
+    typeof n.node_type === "string" &&
+    typeof n.kind === "string" &&
+    Array.isArray(n.children) &&
+    !!n.range &&
+    typeof n.range.start?.row === "number" &&
+    typeof n.range.start?.column === "number" &&
+    typeof n.range.end?.row === "number" &&
+    typeof n.range.end?.column === "number"
+  );
+}
+
 export default function App() {
   const [source, setSource] = useState(DEMO_BY_LANGUAGE.python);
   const [loadedFileName, setLoadedFileName] = useState<string | null>(null);
@@ -476,7 +493,12 @@ export default function App() {
         setError(await res.text());
         return;
       }
-      const json = (await res.json()) as AstNode;
+      const payload = (await res.json()) as unknown;
+      if (!isAstNodeLike(payload)) {
+        setError("Parse API returned invalid payload (expected AST node).");
+        return;
+      }
+      const json = payload;
       if (directoryTree && selectedDirectoryFile) {
         const merged = attachParsedFileAst(directoryTree, selectedDirectoryFile, json);
         setDirectoryTree(merged);
