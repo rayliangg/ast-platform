@@ -31,7 +31,8 @@ export function parseWithFallback({ language, source }: { language: string; sour
       const endRow = findEndRow(normalizedLanguage, lines, i);
       const classNode = createNode("class", className, normalizedLanguage, i + 1, endRow, endColumnAtRow(lines, endRow));
       classNode._indent = leadingSpaces(line);
-      classNode.docstring = extractNodeDocstring(normalizedLanguage, lines, i, endRow, classNode._indent ?? 0);
+      classNode.docstring =
+        extractNodeDocstring(normalizedLanguage, lines, i, endRow, classNode._indent ?? 0) ?? extractLeadingComment(lines, i);
       nodes.push(classNode);
       currentClass = classNode;
       continue;
@@ -41,7 +42,8 @@ export function parseWithFallback({ language, source }: { language: string; sour
     if (fnName) {
       const endRow = findEndRow(normalizedLanguage, lines, i);
       const fnNode = createNode("function", fnName, normalizedLanguage, i + 1, endRow, endColumnAtRow(lines, endRow));
-      fnNode.docstring = extractNodeDocstring(normalizedLanguage, lines, i, endRow, currentClass?._indent ?? 0);
+      fnNode.docstring =
+        extractNodeDocstring(normalizedLanguage, lines, i, endRow, currentClass?._indent ?? 0) ?? extractLeadingComment(lines, i);
       if (currentClass && belongsToClass(normalizedLanguage, line, currentClass)) currentClass.children.push(fnNode);
       else nodes.push(fnNode);
     }
@@ -194,6 +196,27 @@ function extractNodeDocstring(
   return null;
 }
 
+function extractLeadingComment(lines: string[], declarationIdx: number): string | null {
+  let i = declarationIdx - 1;
+  while (i >= 0 && !(lines[i] ?? "").trim()) i -= 1;
+  if (i < 0) return null;
+
+  const line = (lines[i] ?? "").trim();
+  if (!line.startsWith("//") && !line.startsWith("#")) return null;
+
+  const comments: string[] = [];
+  const prefix = line.startsWith("//") ? "//" : "#";
+  while (i >= 0) {
+    const t = (lines[i] ?? "").trim();
+    if (!t.startsWith(prefix)) break;
+    comments.push(t.slice(prefix.length).trim());
+    i -= 1;
+  }
+  comments.reverse();
+  const out = comments.filter(Boolean).join(" ").trim();
+  return out || null;
+}
+
 function stripPrivateFields(node: AstNodeInternal): AstNode {
   const { _indent: _unused, children, ...rest } = node;
   void _unused;
@@ -282,9 +305,12 @@ function functionPatterns(language: string): RegExp[] {
     case "csharp":
     case "kotlin":
     case "swift":
+      return [/^\s*(?:public|private|protected|internal|static|virtual|override|final|\s)*\s*[A-Za-z_][\w<>\[\]?]*\s+([A-Za-z_]\w*)\s*\(/];
     case "cpp":
     case "c":
-      return [/^\s*(?:public|private|protected|internal|static|virtual|override|final|\s)*\s*[A-Za-z_][\w<>\[\]?]*\s+([A-Za-z_]\w*)\s*\(/];
+      return [
+        /^\s*(?:(?:inline|static|virtual|constexpr|const|unsigned|signed|long|short)\s+)*[A-Za-z_~][\w:<>]*\s*[*&\s]+\s*([A-Za-z_~]\w*)\s*\(/,
+      ];
     case "php":
       return [/^\s*(?:public|private|protected)?\s*function\s+([A-Za-z_]\w*)\s*\(/];
     case "ruby":

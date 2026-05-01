@@ -335,8 +335,8 @@ function sliceSourceByRange(fullSource: string, range: AstNode["range"]): string
     return `${picked[0].slice(firstIdx, Math.max(firstIdx + 1, lastIdx))}\n`;
   }
 
-  picked[0] = picked[0].slice(firstIdx);
-  picked[picked.length - 1] = picked[picked.length - 1].slice(0, Math.max(1, lastIdx));
+  // For multi-line nodes, keep line-wise structure and normalize via dedent.
+  // Trimming only first/last columns can skew brace alignment in nested blocks.
   return `${dedentPreservingRelativeIndent(picked).join("\n")}\n`;
 }
 
@@ -349,6 +349,58 @@ function dedentPreservingRelativeIndent(lines: string[]): string[] {
   }
   if (!Number.isFinite(minIndent) || minIndent <= 0) return lines;
   return lines.map((line) => (line.trim() ? line.slice(minIndent) : line));
+}
+
+function extractLeadingCommentSummary(fullSource: string, startRow: number): string | null {
+  const lines = fullSource.replace(/\r\n/g, "\n").split("\n");
+  let i = Math.max(0, startRow - 2);
+  while (i >= 0 && !(lines[i] ?? "").trim()) i -= 1;
+  if (i < 0) return null;
+
+  const line = (lines[i] ?? "").trim();
+
+  if (line.endsWith("*/")) {
+    const block: string[] = [];
+    let j = i;
+    while (j >= 0) {
+      const t = (lines[j] ?? "").trim();
+      block.push(t);
+      if (t.startsWith("/*")) break;
+      j -= 1;
+    }
+    block.reverse();
+    const cleaned = block
+      .join("\n")
+      .replace(/^\/\*+/, "")
+      .replace(/\*+\/$/, "")
+      .split("\n")
+      .map((s) => s.trim().replace(/^\*\s?/, ""))
+      .filter(Boolean)
+      .join(" ")
+      .trim();
+    return cleaned || null;
+  }
+
+  const prefix = line.startsWith("//")
+    ? "//"
+    : line.startsWith("#")
+      ? "#"
+      : line.startsWith("--")
+        ? "--"
+        : null;
+  if (!prefix) return null;
+
+  const comments: string[] = [];
+  let j = i;
+  while (j >= 0) {
+    const t = (lines[j] ?? "").trim();
+    if (!t.startsWith(prefix)) break;
+    comments.push(t.slice(prefix.length).trim());
+    j -= 1;
+  }
+  comments.reverse();
+  const out = comments.filter(Boolean).join(" ").trim();
+  return out || null;
 }
 
 function cloneNode(node: AstNode): AstNode {
@@ -432,6 +484,15 @@ export default function App() {
     if (!selected) return null;
     return inspectorNodeDisplayName(selected, loadedFileName);
   }, [selected, loadedFileName]);
+
+  const inspectorSummaryText = useMemo(() => {
+    if (!selected) return null;
+    if (selected.docstring) return selected.docstring;
+    if (selected.node_type !== "class" && selected.node_type !== "function" && selected.node_type !== "file") return null;
+    const row = selected.range?.start?.row;
+    if (!row) return null;
+    return extractLeadingCommentSummary(source, row);
+  }, [selected, source]);
 
   useEffect(() => {
     setDirectoryLangFocus(null);
@@ -539,7 +600,7 @@ export default function App() {
                     })()
                   : {}),
                 path: selected.path ?? null,
-                summary: selected.docstring,
+                summary: inspectorSummaryText,
                 directory_metadata: selected.directory_metadata ?? null,
                 range: selected.range,
               },
@@ -903,8 +964,8 @@ export default function App() {
                         selected.node_type === "file") && (
                         <div className="inspector-row inspector-row-span">
                           <span>Summary</span>
-                          {selected.docstring ? (
-                            <p className="inspector-doc inspector-doc-grid">{selected.docstring}</p>
+                          {inspectorSummaryText ? (
+                            <p className="inspector-doc inspector-doc-grid">{inspectorSummaryText}</p>
                           ) : (
                             <span className="inspector-lang-empty">—</span>
                           )}
