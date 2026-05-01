@@ -211,14 +211,18 @@ public:
 #include "local.h"
 
 struct Point {
+    // Keep X coordinate.
     int x;
+    // Keep Y coordinate.
     int y;
 };
 
+// Add two integers.
 int add(int a, int b) {
     return a + b;
 }
 
+// Combine point coordinates.
 int combine(struct Point p) {
     return p.x + p.y;
 }
@@ -271,15 +275,18 @@ import java.time.Instant
 import com.example.local.Helper
 
 open class ReportBase {
+    // Return base title.
     open fun title(): String = "base"
 }
 
 class UserService : ReportBase() {
+    // Create user from input.
     fun createUser(name: String): String {
         return name
     }
 }
 
+// Execute demo routine.
 fun runDemo(): String = "ok"
 `,
   swift: `// Swift demo: inheritance + global function.
@@ -315,13 +322,16 @@ import 'package:http/http.dart';
 import './local.dart';
 
 class ReportBase {
+  // Return base report title.
   String title() => "base";
 }
 
 class UserService extends ReportBase {
+  // Create user from input.
   String createUser(String name) => name;
 }
 
+// Describe demo state.
 String describeDemo() => "ok";
 `,
   ruby: `# Ruby demo: inheritance + module function.
@@ -330,17 +340,20 @@ require "json"
 require_relative "./local_helper"
 
 class ReportBase
+  # Return base title.
   def title
     "base"
   end
 end
 
 class UserService < ReportBase
+  # Create user from input.
   def create_user(name)
     name
   end
 end
 
+# Build report hash payload.
 def build_report(id)
   { id: id }
 end
@@ -353,17 +366,20 @@ library(ggplot2)
 source("local.R")
 
 make_base <- function() {
+  # Build base list object.
   list(kind = "base")
 }
 
 make_service <- function() {
   s <- make_base()
+  # Attach user-creation closure.
   s$create_user <- function(name) {
     name
   }
   s
 }
 
+# Build report from numeric input.
 build_report <- function(x) {
   x + 1
 }

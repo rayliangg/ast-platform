@@ -202,10 +202,40 @@ function extractLeadingComment(lines: string[], declarationIdx: number): string 
   if (i < 0) return null;
 
   const line = (lines[i] ?? "").trim();
-  if (!line.startsWith("//") && !line.startsWith("#")) return null;
+  if (line.endsWith("*/")) {
+    const block: string[] = [];
+    let j = i;
+    while (j >= 0) {
+      const t = (lines[j] ?? "").trim();
+      block.push(t);
+      if (t.startsWith("/*")) break;
+      j -= 1;
+    }
+    block.reverse();
+    const cleaned = block
+      .join("\n")
+      .replace(/^\/\*+/, "")
+      .replace(/\*+\/$/, "")
+      .split("\n")
+      .map((s) => s.trim().replace(/^\*\s?/, ""))
+      .filter(Boolean)
+      .join(" ")
+      .trim();
+    return cleaned || null;
+  }
+
+  const prefix = line.startsWith("///")
+    ? "///"
+    : line.startsWith("//")
+      ? "//"
+      : line.startsWith("#")
+        ? "#"
+        : line.startsWith("--")
+          ? "--"
+          : null;
+  if (!prefix) return null;
 
   const comments: string[] = [];
-  const prefix = line.startsWith("//") ? "//" : "#";
   while (i >= 0) {
     const t = (lines[i] ?? "").trim();
     if (!t.startsWith(prefix)) break;
