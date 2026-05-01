@@ -13,21 +13,23 @@ type AstNode = {
 type AstNodeInternal = AstNode & { _indent?: number };
 
 export function parseWithFallback({ language, source }: { language: string; source: string }): AstNode {
+  const normalizedLanguage = String(language ?? "").trim().toLowerCase();
   const lines = source.replace(/\r\n/g, "\n").split("\n");
-  const classRegexes = classPatterns(language);
-  const functionRegexes = functionPatterns(language);
+  const classRegexes = classPatterns(normalizedLanguage);
+  const functionRegexes = functionPatterns(normalizedLanguage);
   const nodes: AstNodeInternal[] = [];
   let currentClass: AstNodeInternal | null = null;
 
   for (let i = 0; i < lines.length; i += 1) {
     const line = lines[i] ?? "";
-    if (currentClass && shouldCloseClassContext(language, line, currentClass)) {
+    if (currentClass && shouldCloseClassContext(normalizedLanguage, line, currentClass)) {
       currentClass = null;
     }
 
     const className = matchFirst(line, classRegexes);
     if (className) {
-      const classNode = createNode("class", className, language, i + 1, line.length + 1);
+      const endRow = findEndRow(normalizedLanguage, lines, i);
+      const classNode = createNode("class", className, normalizedLanguage, i + 1, endRow, line.length + 1);
       classNode._indent = leadingSpaces(line);
       nodes.push(classNode);
       currentClass = classNode;
@@ -36,26 +38,43 @@ export function parseWithFallback({ language, source }: { language: string; sour
 
     const fnName = matchFirst(line, functionRegexes);
     if (fnName) {
-      const fnNode = createNode("function", fnName, language, i + 1, line.length + 1);
-      if (currentClass && belongsToClass(language, line, currentClass)) currentClass.children.push(fnNode);
+      const endRow = findEndRow(normalizedLanguage, lines, i);
+      const fnNode = createNode("function", fnName, normalizedLanguage, i + 1, endRow, line.length + 1);
+      if (currentClass && belongsToClass(normalizedLanguage, line, currentClass)) currentClass.children.push(fnNode);
       else nodes.push(fnNode);
     }
   }
 
   const cleanedChildren = nodes.map(stripPrivateFields);
   return {
-    id: `${language}:file`,
-    language,
+    id: `${normalizedLanguage}:file`,
+    language: normalizedLanguage,
     node_type: "file",
     kind: "File",
     name: null,
-    docstring: extractTopComment(language, lines),
+    docstring: extractTopComment(normalizedLanguage, lines),
     range: {
       start: { row: 1, column: 1 },
       end: { row: Math.max(1, lines.length), column: 1 },
     },
     children: cleanedChildren,
   };
+}
+
+function findEndRow(language: string, lines: string[], startIdx: number): number {
+  if (language === "python" || language === "ruby" || language === "r") {
+    const baseIndent = leadingSpaces(lines[startIdx] ?? "");
+    let endRow = startIdx + 1;
+    for (let i = startIdx + 1; i < lines.length; i += 1) {
+      const line = lines[i] ?? "";
+      const trimmed = line.trim();
+      if (!trimmed) continue;
+      if (leadingSpaces(line) <= baseIndent) return endRow;
+      endRow = i + 1;
+    }
+    return endRow;
+  }
+  return startIdx + 1;
 }
 
 function stripPrivateFields(node: AstNodeInternal): AstNode {
@@ -87,7 +106,14 @@ function leadingSpaces(line: string): number {
   return line.match(/^\s*/)?.[0].length ?? 0;
 }
 
-function createNode(nodeType: "class" | "function", name: string, language: string, row: number, endColumn: number): AstNodeInternal {
+function createNode(
+  nodeType: "class" | "function",
+  name: string,
+  language: string,
+  row: number,
+  endRow: number,
+  endColumn: number
+): AstNodeInternal {
   return {
     id: `${language}:${nodeType}:${row}:${name}`,
     language,
@@ -97,7 +123,7 @@ function createNode(nodeType: "class" | "function", name: string, language: stri
     docstring: null,
     range: {
       start: { row, column: 1 },
-      end: { row, column: endColumn },
+      end: { row: Math.max(row, endRow), column: endColumn },
     },
     children: [],
   };
