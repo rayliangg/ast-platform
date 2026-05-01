@@ -29,8 +29,9 @@ export function parseWithFallback({ language, source }: { language: string; sour
     const className = matchFirst(line, classRegexes);
     if (className) {
       const endRow = findEndRow(normalizedLanguage, lines, i);
-      const classNode = createNode("class", className, normalizedLanguage, i + 1, endRow, line.length + 1);
+      const classNode = createNode("class", className, normalizedLanguage, i + 1, endRow, endColumnAtRow(lines, endRow));
       classNode._indent = leadingSpaces(line);
+      classNode.docstring = extractNodeDocstring(normalizedLanguage, lines, i, endRow, classNode._indent ?? 0);
       nodes.push(classNode);
       currentClass = classNode;
       continue;
@@ -39,7 +40,8 @@ export function parseWithFallback({ language, source }: { language: string; sour
     const fnName = matchFirst(line, functionRegexes);
     if (fnName) {
       const endRow = findEndRow(normalizedLanguage, lines, i);
-      const fnNode = createNode("function", fnName, normalizedLanguage, i + 1, endRow, line.length + 1);
+      const fnNode = createNode("function", fnName, normalizedLanguage, i + 1, endRow, endColumnAtRow(lines, endRow));
+      fnNode.docstring = extractNodeDocstring(normalizedLanguage, lines, i, endRow, currentClass?._indent ?? 0);
       if (currentClass && belongsToClass(normalizedLanguage, line, currentClass)) currentClass.children.push(fnNode);
       else nodes.push(fnNode);
     }
@@ -75,6 +77,33 @@ function findEndRow(language: string, lines: string[], startIdx: number): number
     return endRow;
   }
   return startIdx + 1;
+}
+
+function endColumnAtRow(lines: string[], row: number): number {
+  const line = lines[Math.max(0, row - 1)] ?? "";
+  return Math.max(1, line.length + 1);
+}
+
+function extractNodeDocstring(
+  language: string,
+  lines: string[],
+  startIdx: number,
+  endRow: number,
+  parentIndent: number
+): string | null {
+  if (language !== "python") return null;
+  for (let i = startIdx + 1; i < Math.min(lines.length, endRow); i += 1) {
+    const line = lines[i] ?? "";
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+    const indent = leadingSpaces(line);
+    if (indent <= parentIndent) return null;
+    if ((trimmed.startsWith('"""') && trimmed.endsWith('"""') && trimmed.length > 6) || (trimmed.startsWith("'''") && trimmed.endsWith("'''") && trimmed.length > 6)) {
+      return trimmed.slice(3, -3).trim() || null;
+    }
+    return null;
+  }
+  return null;
 }
 
 function stripPrivateFields(node: AstNodeInternal): AstNode {
