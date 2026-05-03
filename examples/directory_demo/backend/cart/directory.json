@@ -1,0 +1,8 @@
+{
+  "manifest_version": 1,
+  "title": "cart",
+  "summary": "Nested package folder under backend; holds a minimal Python file for directory-tree demos.",
+  "paths": {
+    "cart.py": "Python: empty stub file (structure demo only)"
+  }
+}

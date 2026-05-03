@@ -1,0 +1,9 @@
+{
+  "manifest_version": 1,
+  "title": "backend",
+  "summary": "Python backend sample: repository boundary, in-memory user repository, user service, and a cart subfolder.",
+  "paths": {
+    "service.py": "Python: Repository, InMemoryUserRepository, UserService",
+    "cart/cart.py": "Python: cart module placeholder for nested directory layout"
+  }
+}

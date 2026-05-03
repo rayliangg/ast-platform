@@ -1,0 +1,8 @@
+{
+  "manifest_version": 1,
+  "title": "frontend",
+  "summary": "TypeScript frontend sample: controller hierarchy for the AST workbench directory demo.",
+  "paths": {
+    "app.ts": "TypeScript: BaseController → DefaultController → AppController"
+  }
+}

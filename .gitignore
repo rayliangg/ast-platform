@@ -1,0 +1,66 @@
+# --- OS ---
+.DS_Store
+.localized
+Thumbs.db
+Desktop.ini
+*~
+
+# --- Env & secrets ---
+.env
+.env.*
+!.env.example
+.env.local
+.env.*.local
+*.pem
+.dev.vars
+.dev.vars.*
+
+# --- Node / npm ---
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.npm/
+.pnpm-store/
+*.tgz
+
+# --- Frontend build & tooling (Vite / Vitest / misc) ---
+dist/
+build/
+.vite/
+coverage/
+*.tsbuildinfo
+.eslintcache
+
+# --- Rust ---
+target/
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.pyo
+.python-version
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# --- Cloudflare ---
+.wrangler/
+wrangler.local.toml
+
+# --- IDE & editors ---
+.vscode/
+.idea/
+*.swp
+*.swo
+*.orig
+*.rej
+
+# --- Local scratch ---
+.cache/
+tmp/
+temp/
+*.log

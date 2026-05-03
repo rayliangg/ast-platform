@@ -1,0 +1,12 @@
+{
+  "name": "ast-platform",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "ui:install": "npm --prefix apps/ui install",
+    "ui:dev": "npm --prefix apps/ui run dev",
+    "ui:build": "npm --prefix apps/ui run build",
+    "parse:server": "node scripts/parse-server.mjs",
+    "gift:diff": "node scripts/gift.mjs"
+  }
+}
