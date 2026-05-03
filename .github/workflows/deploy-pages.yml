@@ -1,3 +1,5 @@
+# Requires: Settings → Pages → Build and deployment → Source = "GitHub Actions"
+# or deploy-pages often fails with HttpError 404 when creating the deployment.
 name: Deploy UI to GitHub Pages
 
 on:
@@ -9,6 +11,7 @@ permissions:
   contents: read
   pages: write
   id-token: write
+  actions: read
 
 concurrency:
   group: pages
@@ -29,7 +32,6 @@ jobs:
           npm run ui:install
           npm run ui:build
         env:
-          # Optional: override the default Worker URL baked into production builds
           VITE_PARSE_API_BASE: ${{ secrets.VITE_PARSE_API_BASE }}
       - uses: actions/upload-pages-artifact@v3
         with:
@@ -38,9 +40,13 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+      actions: read
     environment:
       name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - id: deploy
+      - id: deployment
         uses: actions/deploy-pages@v4
