@@ -39,7 +39,7 @@ function TreeItem({
         className="tree-node-row"
         style={{
           marginLeft: depth * 16,
-          borderLeft: depth > 0 ? "1px solid #273244" : "none",
+          borderLeft: depth > 0 ? "1px solid #d7e4ff" : "none",
           paddingLeft: depth > 0 ? 10 : 0,
         }}
       >
