@@ -1,4 +1,4 @@
-# AST Platform
+# ast platform
 
 Web app: parse source to an AST and explore structure in a tree view (single files or folders).
 
@@ -6,25 +6,23 @@ Web app: parse source to an AST and explore structure in a tree view (single fil
 
 Python, JavaScript, TypeScript, Go, Rust, Java, C++, C, C#, PHP, Kotlin, Swift, Dart, Ruby, R.
 
-## Quick start
+## ⚡ Setup
 
-From the repository root.
-
-**1. UI (install, then dev server)**
-
+### Backend
 ```bash
-npm run ui:install
-npm run ui:dev
+cd backend
+python -m venv venv
+source venv/bin/activate   # Windows: venv\Scripts\activate
+pip install -r requirements.txt
+uvicorn main:app --reload
 ```
 
-After `ui:dev`, open the URL Vite prints (often `http://localhost:5173`). Leave this terminal running while you use the app.
-
-**2. Optional (separate terminal for API; build when you are not running `ui:dev`)**
-
+### Frontend
 ```bash
-npm run parse:server
-npm run ui:build
+cd frontend
+npm install
+npm run dev
 ```
 
-`parse:server` serves the local parser at `http://localhost:8787`. `ui:build` writes static files to `apps/ui/dist`.
+Visit: `http://localhost:5173`
 
