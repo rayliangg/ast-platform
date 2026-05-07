@@ -9,20 +9,18 @@ Python, JavaScript, TypeScript, Go, Rust, Java, C++, C, C#, PHP, Kotlin, Swift, 
 ## ⚡ Setup
 
 ### Backend
+
 ```bash
-cd backend
-python -m venv venv
-source venv/bin/activate   # Windows: venv\Scripts\activate
-pip install -r requirements.txt
-uvicorn main:app --reload
+npm run parse:server
+npm run ui:build
 ```
 
 ### Frontend
+
 ```bash
-cd frontend
-npm install
-npm run dev
+npm run ui:install
+npm run ui:dev
 ```
 
-Visit: `http://localhost:5173`
-
+Visit local: `http://localhost:5173`  
+Available in: [https://rayliangg.github.io/ast-platform/](https://rayliangg.github.io/ast-platform/)
